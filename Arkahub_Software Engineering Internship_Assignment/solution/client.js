@@ -141,7 +141,12 @@ async function main() {
     console.log(`Total Devices: ${TOTAL_DEVICES}`);
     console.log(`Successfully Processed: ${processedCount}`);
 
-    
+    // Here we could merge all results into one big object if structure allows
+    // For demo, we just print summary.
+
+    // Serialize to JSON for verification if needed
+    // const fs = require('fs');
+    // fs.writeFileSync('results.json', JSON.stringify(results, null, 2));
 }
 
 main().catch(console.error);

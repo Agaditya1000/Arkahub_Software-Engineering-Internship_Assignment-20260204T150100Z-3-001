@@ -1,54 +1,82 @@
-# EnergyGrid Mock API
+# EnergyGrid Data Aggregator Solution
 
-This is the mock backend server for the EnergyGrid Data Aggregator coding assignment.
+This repository contains the complete solution for the EnergyGrid Data Aggregator coding assignment. It includes both the Mock API Server (legacy system simulation) and the Node.js Client Solution (the implementation).
 
-## Prerequisites
+## Project Structure
 
-- Node.js (v14 or higher)
-- npm (Node Package Manager)
+- **`/` (Root)**: Contains the Mock API Server code.
+- **`/solution`**: Contains the Client Solution code.
 
-## Setup and Run
+---
 
-1.  **Navigate to the project directory:**
-    ```bash
-    cd mock-api
-    ```
+## Part 1: The Mock Server (EnergyGrid System)
 
-2.  **Install dependencies:**
+The mock server simulates the strict "EnergyGrid" legacy API.
+
+### Prerequisites
+- Node.js (v14+)
+- valid `npm` installation
+
+### Setup & Run
+1.  Open a terminal in the **root** folder.
+2.  Install dependencies:
     ```bash
     npm install
     ```
-
-3.  **Start the server:**
+3.  Start the server:
     ```bash
     npm start
     ```
-    Or directly:
+    *Output*: `⚡ EnergyGrid Mock API running on port 3000`
+
+### Constraints (Enforced by Server)
+- **Rate Limit**: Strictly **1 request per second**. (Returns `429` if exceeded).
+- **Batch Limit**: Max **10 devices** per request. (Returns `400` if exceeded).
+- **Security**: Requires a custom **MD5 Signature** header.
+
+---
+
+## Part 2: The Client Solution
+
+The client is a robust Node.js application designed to fetch data for 500 devices while strictly adhering to the server's constraints.
+
+### Prerequisites
+- The Mock Server **MUST** be running (see above).
+- Open a **new** terminal window.
+
+### Setup & Run
+1.  Navigate to the solution folder:
     ```bash
-    node server.js
+    cd solution
     ```
-
-4.  **Verify:**
-    You should see the following output:
+2.  Install dependencies:
+    ```bash
+    npm install
     ```
-    ⚡ EnergyGrid Mock API running on port 3000
-       Constraints: 1 req/sec, Max 10 items/batch
+3.  Run the client:
+    ```bash
+    npm start
     ```
-    The server is now listening at `http://localhost:3000`.
+    *Or manually: `node client.js`*
 
-## API Details
+### Implementation Details
+My solution (`solution/client.js`) implements the following logic to handle the constraints:
 
--   **Base URL:** `http://localhost:3000`
--   **Endpoint:** `POST /device/real/query`
--   **Auth Token:** `interview_token_123`
+1.  **Rate Limiting**:
+    - Implemented a custom `RateLimiter` class.
+    - Enforces a **1050ms delay** between requests.
+    - This ensures we never hit the `429` error by staying safely above the 1s limit.
 
-### Security Headers Required
-Every request must include:
-- `timestamp`: Current time in milliseconds.
-- `signature`: `MD5( URL + Token + timestamp )`
+2.  **Batching**:
+    - The 500 dummy serial numbers are split into **50 batches** of 10.
+    - This respects the maximum batch size limit.
 
-### Constraints
-- **Rate Limit:** 1 request per second.
-- **Batch Size:** Max 10 serial numbers per request.
+3.  **Security**:
+    - Generates a valid MD5 signature for every request using:
+    - `MD5( URL_PATH + TOKEN + TIMESTAMP )`
 
-See `instructions.md` for full details.
+4.  **Reliability**:
+    - Includes automatic retry logic for network errors.
+
+### Verification
+Running the client produces a log showing 50 successful batch fetches, taking approximately 50-55 seconds to complete, with zero errors.
